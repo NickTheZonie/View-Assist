@@ -50,6 +50,10 @@ blueprint:
       name: Play Song Command
       description: The command to trigger the play song action
       default: play {song} by {artist}
+    play_album_command:
+      name: Play Album Command
+      description: The command to trigger the play album action
+      default: play [the album] {album} [by {artist}]
     queue_song_command:
       name: Queue Song Command
       description: The command to trigger the queue song action
@@ -66,6 +70,9 @@ trigger:
   - trigger: conversation
     command: !input play_song_command
     id: playsong
+  - trigger: conversation
+    command: !input play_album_command
+    id: playalbum  
   - trigger: conversation
     command: !input queue_song_command
     id: cuesong
@@ -115,6 +122,8 @@ actions:
               found
             playsong_found: Playing {song} by {artist}
             playsong_not_found: Sorry {song} by {artist} was not found
+            playalbum_found: Playing {album} by {artist}
+            playalbum_not_found: Sorry {album} by {artist} was not found
             playsong_queue: Queuing {song} by {artist}
         de:
           responses:
@@ -254,6 +263,76 @@ actions:
                       conversation_response:
                         '{{ translations[language][''responses''][''playartist_not_found''].replace("{search_artist}",
                         trigger.slots.artist)}}'
+                  - set_conversation_response: "{{ conversation_response }}"
+                  - action: view_assist.set_state
+                    target:
+                      entity_id: "{{ target_satellite_device }}"
+                    data:
+                      last_said: "{{ conversation_response }}"
+                else:
+                  - set_conversation_response: ""
+      - conditions:
+          - condition: trigger
+            id:
+              - playalbum
+        sequence:
+          - action: music_assistant.search
+            data:
+              limit: 1
+              config_entry_id: "{{ ma_instance }}"
+              media_type:
+                - album
+              name: "{{ trigger.slots.artist  }}"
+            response_variable: found_album
+          - alias: Did we find an album?
+            if:
+              - condition: template
+                value_template: "{{found_artist['albums'] | count>0}}"
+                alias: We found an album!
+            then:
+              - action: view_assist.set_state
+                target:
+                  entity_id: "{{ target_satellite_device }}"
+                data:
+                  mode: music
+                  title: ""
+                  message_font_size: 5vw
+              - action: view_assist.navigate
+                data:
+                  device: "{{ target_satellite_device }}"
+                  path: "{{ view_path }}"
+              - action: music_assistant.play_media
+                target:
+                  entity_id: "{{ target_musicplayer_device }}"
+                data:
+                  media_type: album
+                  enqueue: replace
+                  media_id: "{{ found_album.albums.0.name }}"
+              - if:
+                  - condition: template
+                    value_template: "{{ target_use_announce is not false }}"
+                then:
+                  - variables:
+                      conversation_response:
+                        '{{ translations[language][''responses''][''playalbum_found''].replace("{album}",
+                        found_album.albums.0.name)}}'
+                  - set_conversation_response: "{{ conversation_response }}"
+                  - action: view_assist.set_state
+                    target:
+                      entity_id: "{{ target_satellite_device }}"
+                    data:
+                      last_said: "{{ conversation_response }}"
+                else:
+                  - set_conversation_response: ""
+            else:
+              - if:
+                  - condition: template
+                    value_template: "{{ target_use_announce is not false }}"
+                then:
+                  - variables:
+                      conversation_response:
+                        '{{ translations[language][''responses''][''playalbum_not_found''].replace("{search_album}",
+                        trigger.slots.album)}}'
                   - set_conversation_response: "{{ conversation_response }}"
                   - action: view_assist.set_state
                     target:
