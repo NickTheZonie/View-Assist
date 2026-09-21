@@ -1,9 +1,8 @@
 blueprint:
   name: View Assist - Play Music with Music Assistant
-  description:
-    Use various methods to play individual songs, add to queue, play artist
-    and playlists from your Music Assistant server (View Assist Play Music with Music
-    Assistant v 1.2.8)
+  description: >-
+    Use various methods to play individual songs, add to queue, play artist,
+    albums, and playlists from your Music Assistant server (View Assist Play Music with Music Assistant v 1.2.8 + Album Mod)
   domain: automation
   input:
     ma_instance:
@@ -14,9 +13,8 @@ blueprint:
           integration: music_assistant
     view_path:
       name: Dashboard Info view
-      description:
-        The View Assist dashboard view to use for displaying music information
-        (example /view-assist/music)
+      description: >-
+        The View Assist dashboard view to use for displaying music information (example /view-assist/music)
       default: /view-assist/music
     language:
       name: Language
@@ -39,21 +37,20 @@ blueprint:
     play_artist_command:
       name: Play Artist Command
       description: The command to trigger the play artist action
-      default:
-        (play the artist {artist} | play some {artist} [music] |play [some]
-        [music | songs] by {artist})
+      default: >-
+        (play the artist {artist} | play some {artist} [music] |play [some] [music | songs] by {artist})
     play_playlist_command:
       name: Play Playlist Command
       description: The command to trigger the play playlist action
       default: start [the] {playlist} playlist
+    play_album_command:
+      name: Play Album Command
+      description: The command to trigger the play album action
+      default: (play | listen to) [the] album {album} [by {artist}]
     play_song_command:
       name: Play Song Command
       description: The command to trigger the play song action
       default: play {song} by {artist}
-    play_album_command:
-      name: Play Album Command
-      description: The command to trigger the play album action
-      default: play [the album] {album} [by {artist}]
     queue_song_command:
       name: Queue Song Command
       description: The command to trigger the queue song action
@@ -68,11 +65,11 @@ trigger:
     command: !input play_playlist_command
     id: playlist
   - trigger: conversation
+    command: !input play_album_command
+    id: playalbum
+  - trigger: conversation
     command: !input play_song_command
     id: playsong
-  - trigger: conversation
-    command: !input play_album_command
-    id: playalbum  
   - trigger: conversation
     command: !input queue_song_command
     id: cuesong
@@ -82,124 +79,23 @@ actions:
       target_satellite_device: "{{ view_assist_entity(trigger.device_id) }}"
       target_mediaplayer_device: "{{ state_attr(target_satellite_device, 'mediaplayer_device')}}"
       target_satellite_device_type: "{{ state_attr(target_satellite_device, 'type')}}"
-      target_musicplayer_device:
-        "{{ state_attr(target_satellite_device, 'musicplayer_device')
-        }}"
-      target_use_announce:
-        "{{ state_attr(target_satellite_device, 'use_announce')
-        }}"
+      target_musicplayer_device: "{{ state_attr(target_satellite_device, 'musicplayer_device') }}"
+      target_use_announce: "{{ state_attr(target_satellite_device, 'use_announce') }}"
       view_path: !input view_path
       ma_instance: !input ma_instance
       language: !input language
       translations:
-        it:
-          responses:
-            playartist_found: Riproduco dei brani di {artist}
-            playartist_not_found: Non sono riuscito a trovare brani di {search_artist}
-            playlist_found: Riproduco la playlist {playlist}
-            playlist_not_found: >-
-              Mi dispiace, non ho trovato alcuna playlist chiamata
-              {search_playlist}
-            playsong_found: Riproduco {song} di {artist}
-            playsong_not_found: Mi dispiace, non ho trovato {song} di {artist}
-            playsong_queue: Metto in coda {song} di {artist}
-        ca:
-          responses:
-            playartist_found: "Reproduint música de {artist}"
-            playartist_not_found: "No he pogut trobar música per a {search_artist}"
-            playlist_found: "Reproduint la llista de reproducció {playlist}"
-            playlist_not_found: "Ho sento, no s'ha pogut trobar cap llista anomenada {search_playlist}"
-            playsong_found: "Reproduint {song} de {artist}"
-            playsong_not_found: "Ho sento, no s'ha trobat {song} de {artist}"
-            playsong_queue: "Afegint a la cua {song} de {artist}"
         en:
           responses:
             playartist_found: Playing {artist} music
             playartist_not_found: I was unable to find any music for {search_artist}
             playlist_found: Playing the {playlist} playlist
-            playlist_not_found:
-              Sorry, no playlist named {search_playlist} could be
-              found
+            playlist_not_found: Sorry, no playlist named {search_playlist} could be found
+            playalbum_found: Playing the album {album} by {artist}
+            playalbum_not_found: Sorry, the album {album} by {artist} was not found
             playsong_found: Playing {song} by {artist}
             playsong_not_found: Sorry {song} by {artist} was not found
-            playalbum_found: Playing {album} by {artist}
-            playalbum_not_found: Sorry {album} by {artist} was not found
             playsong_queue: Queuing {song} by {artist}
-        de:
-          responses:
-            playartist_found: Spiele Musik von {artist}
-            playartist_not_found:
-              Entschuldigung, ich konnte keine Musik von {search_artist}
-              finden
-            playlist_found: Spiele die Playlist {playlist}
-            playlist_not_found:
-              Entschuldigung, ich konnte keine Playlist mit dem Namen
-              {search_playlist} finden
-            playsong_found: Spiele {song} von {artist}
-            playsong_not_found:
-              Entschuldigung, ich konnte den Song {song} von {artist}
-              nicht finden
-            playsong_queue: Füge {song} von {artist} zur Warteschlange hinzu
-        es:
-          responses:
-            playartist_found: "Reproduciendo música de {artist}"
-            playartist_not_found: "No he podido encontrar música para {search_artist}"
-            playlist_found: "Reproduciendo la lista de reproducción {playlist}"
-            playlist_not_found: "Lo siento, no se ha podido encontrar ninguna lista llamada {search_playlist}"
-            playsong_found: "Reproduciendo {song} de {artist}"
-            playsong_not_found: "Lo siento, no se ha encontrado {song} de {artist}"
-            playsong_queue: "Añadiendo a la cola {song} de {artist}"
-        it:
-          responses:
-            playartist_found: "Riproduco la musica di {artist}"
-            playartist_not_found: "Non ho trovato musica di {search_artist}"
-            playlist_found: "Riproduco la playlist {playlist}"
-            playlist_not_found: "Mi dispiace, non ho trovato nessuna playlist chiamata {search_playlist}"
-            playsong_found: "Riproduco {song} di {artist}"
-            playsong_not_found: "Mi dispiace, non ho trovato {song} di {artist}"
-            playsong_queue: "Aggiungo alla coda {song} di {artist}"
-        nl:
-          responses:
-            playartist_found: Muziek van {artist} afspelen
-            playartist_not_found: Ik kon geen muziek vinden van {search_artist}
-            playlist_found: De afspeellijst {playlist} afspelen
-            playlist_not_found:
-              Sorry, er kon geen afspeellijst met de naam {search_playlist}
-              worden gevonden
-            playsong_found: "{song} van {artist} afspelen"
-            playsong_not_found: Sorry, {song} van {artist} is niet gevonden
-            playsong_queue: "{song} van {artist} toevoegen aan de wachtrij"
-        pl:
-          responses:
-            playartist_found: Odtwarzam muzykę {artist}
-            playartist_not_found: Nie udało się znaleźć muzyki dla {search_artist}
-            playlist_found: Odtwarzam playlistę {playlist}
-            playlist_not_found: Przepraszam, nie znaleziono playlisty o nazwie {search_playlist}
-            playsong_found: Odtwarzam {song} od {artist}
-            playsong_not_found: Przepraszam, nie znaleziono {song} od {artist}
-            playsong_queue: Dodaję do kolejki {song} od {artist}
-        pt:
-          responses:
-            playartist_found: Tocando música de {artist}
-            playartist_not_found: Não foi possível encontrar nenhuma música de {search_artist}
-            playlist_found: Tocando a Playlist {playlist}
-            playlist_not_found:
-              Desculpe, nenhuma Playlist com o nome {search_playlist}
-              pode ser encontrada
-            playsong_found: Tocando {song} por {artist}
-            playsong_not_found: Desculpe, a música {song} por {artist} não foi encontrada
-            playsong_queue: Incluindo a música {song} por {artist} na lista
-        ro:
-          responses:
-            playartist_found: Redau muzică de {artist}
-            playartist_not_found: Nu am găsit muzică de {search_artist}
-            playlist_found: Redau lista de redare {playlist}
-            playlist_not_found:
-              Îmi pare rău, nu a fost găsită nicio listă de redare
-              numită {search_playlist}
-            playsong_found: Redau {song} de {artist}
-            playsong_not_found: Îmi pare rău, {song} de {artist} nu a fost găsit
-            playsong_queue: Adaug în coadă {song} de {artist}
   - choose:
       - conditions:
           - condition: trigger
@@ -212,7 +108,7 @@ actions:
               config_entry_id: "{{ ma_instance }}"
               media_type:
                 - artist
-              name: "{{ trigger.slots.artist  }}"
+              name: "{{ trigger.slots.artist }}"
             response_variable: found_artist
           - alias: Did we find an artist?
             if:
@@ -243,9 +139,8 @@ actions:
                     value_template: "{{ target_use_announce is not false }}"
                 then:
                   - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playartist_found''].replace("{artist}",
-                        found_artist.artists.0.name)}}'
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playartist_found'].replace("{artist}", found_artist.artists.0.name)}}
                   - set_conversation_response: "{{ conversation_response }}"
                   - action: view_assist.set_state
                     target:
@@ -260,79 +155,8 @@ actions:
                     value_template: "{{ target_use_announce is not false }}"
                 then:
                   - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playartist_not_found''].replace("{search_artist}",
-                        trigger.slots.artist)}}'
-                  - set_conversation_response: "{{ conversation_response }}"
-                  - action: view_assist.set_state
-                    target:
-                      entity_id: "{{ target_satellite_device }}"
-                    data:
-                      last_said: "{{ conversation_response }}"
-                else:
-                  - set_conversation_response: ""
-      - conditions:
-          - condition: trigger
-            id:
-              - playalbum
-        sequence:
-          - action: music_assistant.search
-            data:
-              limit: 1
-              config_entry_id: "{{ ma_instance }}"
-              media_type:
-                - album
-              name: "{{ trigger.slots.album  }}"
-            response_variable: found_album
-          - alias: Did we find an album?
-            if:
-              - condition: template
-                value_template: "{{found_album['albums'] | count>0}}"
-                alias: We found an album!
-            then:
-              - action: view_assist.set_state
-                target:
-                  entity_id: "{{ target_satellite_device }}"
-                data:
-                  mode: music
-                  title: ""
-                  message_font_size: 5vw
-              - action: view_assist.navigate
-                data:
-                  device: "{{ target_satellite_device }}"
-                  path: "{{ view_path }}"
-              - action: music_assistant.play_media
-                target:
-                  entity_id: "{{ target_musicplayer_device }}"
-                data:
-                  media_type: album
-                  enqueue: replace
-                  media_id: "{{ found_album.albums.0.name }}"
-              - if:
-                  - condition: template
-                    value_template: "{{ target_use_announce is not false }}"
-                then:
-                  - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playalbum_found''].replace("{album}",
-                        found_album.albums.0.name)}}'
-                  - set_conversation_response: "{{ conversation_response }}"
-                  - action: view_assist.set_state
-                    target:
-                      entity_id: "{{ target_satellite_device }}"
-                    data:
-                      last_said: "{{ conversation_response }}"
-                else:
-                  - set_conversation_response: ""
-            else:
-              - if:
-                  - condition: template
-                    value_template: "{{ target_use_announce is not false }}"
-                then:
-                  - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playalbum_not_found''].replace("{search_album}",
-                        trigger.slots.album)}}'
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playartist_not_found'].replace("{search_artist}", trigger.slots.artist)}}
                   - set_conversation_response: "{{ conversation_response }}"
                   - action: view_assist.set_state
                     target:
@@ -383,9 +207,8 @@ actions:
                     value_template: "{{ target_use_announce is not false }}"
                 then:
                   - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playlist_found''].replace("{playlist}",
-                        found_playlist.playlists.0.name )}}'
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playlist_found'].replace("{playlist}", found_playlist.playlists.0.name )}}
                   - set_conversation_response: "{{ conversation_response }}"
                   - action: view_assist.set_state
                     target:
@@ -400,9 +223,78 @@ actions:
                     value_template: "{{ target_use_announce is not false }}"
                 then:
                   - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playlist_not_found''].replace("{search_playlist}",
-                        trigger.slots.playlist )}}'
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playlist_not_found'].replace("{search_playlist}", trigger.slots.playlist )}}
+                  - set_conversation_response: "{{ conversation_response }}"
+                  - action: view_assist.set_state
+                    target:
+                      entity_id: "{{ target_satellite_device }}"
+                    data:
+                      last_said: "{{ conversation_response }}"
+                else:
+                  - set_conversation_response: ""
+      - conditions:
+          - condition: trigger
+            id:
+              - playalbum
+        sequence:
+          - action: music_assistant.search
+            data:
+              limit: 1
+              config_entry_id: "{{ ma_instance }}"
+              media_type:
+                - album
+              name: "{{ trigger.slots.album }}"
+              artist: "{{ trigger.slots.artist | default('') }}"
+            response_variable: found_album
+          - alias: Did we find an album?
+            if:
+              - condition: template
+                value_template: "{{ found_album['albums'] | count > 0 }}"
+                alias: We found an album!
+            then:
+              - action: view_assist.set_state
+                target:
+                  entity_id: "{{ target_satellite_device }}"
+                data:
+                  mode: music
+                  title: ""
+                  message_font_size: 5vw
+              - action: view_assist.navigate
+                data:
+                  device: "{{ target_satellite_device }}"
+                  path: "{{ view_path }}"
+              - action: music_assistant.play_media
+                target:
+                  entity_id: "{{ target_musicplayer_device }}"
+                data:
+                  media_type: album
+                  enqueue: replace
+                  media_id: "{{ found_album.albums.0.name }}"
+                  artist: "{{ trigger.slots.artist | default('') }}"
+              - if:
+                  - condition: template
+                    value_template: "{{ target_use_announce is not false }}"
+                then:
+                  - variables:
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playalbum_found'].replace("{artist}", trigger.slots.artist | default('')).replace("{album}", found_album.albums.0.name) }}
+                  - set_conversation_response: "{{ conversation_response }}"
+                  - action: view_assist.set_state
+                    target:
+                      entity_id: "{{ target_satellite_device }}"
+                    data:
+                      last_said: "{{ conversation_response }}"
+                else:
+                  - set_conversation_response: ""
+            else:
+              - if:
+                  - condition: template
+                    value_template: "{{ target_use_announce is not false }}"
+                then:
+                  - variables:
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playalbum_not_found'].replace("{artist}", trigger.slots.artist | default('')).replace("{album}", trigger.slots.album) }}
                   - set_conversation_response: "{{ conversation_response }}"
                   - action: view_assist.set_state
                     target:
@@ -423,7 +315,7 @@ actions:
               config_entry_id: "{{ ma_instance }}"
               media_type:
                 - track
-              name: "{{ trigger.slots.song  }}"
+              name: "{{ trigger.slots.song }}"
               artist: "{{ trigger.slots.artist | default('') }}"
             response_variable: found_track
           - alias: Did we find a track?
@@ -443,10 +335,7 @@ actions:
                 data:
                   device: "{{ target_satellite_device }}"
                   path: "{{ view_path }}"
-              - alias:
-                  Set enqueue_type, media_type and response_first_word depending on cuesong
-                  or playsong trigger
-                choose:
+              - choose:
                   - conditions:
                       - condition: trigger
                         id:
@@ -459,7 +348,7 @@ actions:
                           media_type: track
                           enqueue: next
                           media_id: "{{ found_track.tracks.0.name }}"
-                          artist: "{{ trigger.slots.artist  }}"
+                          artist: "{{ trigger.slots.artist }}"
                       - if:
                           - condition: template
                             value_template: "{{ target_use_announce is not false }}"
@@ -487,7 +376,7 @@ actions:
                           media_type: track
                           enqueue: play
                           media_id: "{{ found_track.tracks.0.name }}"
-                          artist: "{{ trigger.slots.artist  }}"
+                          artist: "{{ trigger.slots.artist }}"
                       - if:
                           - condition: template
                             value_template: "{{ target_use_announce is not false }}"
@@ -495,7 +384,6 @@ actions:
                           - variables:
                               conversation_response: >-
                                 {{ translations[language]['responses']['playsong_found'].replace("{artist}", found_track.tracks[0].artists[0].name).replace("{song}", found_track.tracks[0].name) }}
-
                           - set_conversation_response: "{{ conversation_response }}"
                           - action: view_assist.set_state
                             target:
@@ -510,9 +398,8 @@ actions:
                     value_template: "{{ target_use_announce is not false }}"
                 then:
                   - variables:
-                      conversation_response:
-                        '{{ translations[language][''responses''][''playsong_not_found''].replace("{artist}",
-                        trigger.slots.artist ).replace("{song}", trigger.slots.song ) }}'
+                      conversation_response: >-
+                        {{ translations[language]['responses']['playsong_not_found'].replace("{artist}", trigger.slots.artist ).replace("{song}", trigger.slots.song ) }}
                   - set_conversation_response: "{{ conversation_response }}"
                   - action: view_assist.set_state
                     target:
