@@ -282,12 +282,12 @@ actions:
               config_entry_id: "{{ ma_instance }}"
               media_type:
                 - album
-              name: "{{ trigger.slots.artist  }}"
+              name: "{{ trigger.slots.album  }}"
             response_variable: found_album
           - alias: Did we find an album?
             if:
               - condition: template
-                value_template: "{{found_artist['albums'] | count>0}}"
+                value_template: "{{found_album['albums'] | count>0}}"
                 alias: We found an album!
             then:
               - action: view_assist.set_state
